@@ -1,5 +1,7 @@
 require 'sinatra/base'
 require './lib/player.rb'
+require './lib/game.rb'
+require './lib/computer.rb'
 
 class RpsApp < Sinatra::Base
   enable :sessions
@@ -9,13 +11,25 @@ class RpsApp < Sinatra::Base
   end
 
   post '/names' do
-    session[:player_name] = params[:player_name]
-    redirect '/make-a-move'
+    player = Player.new(params[:player_name])
+    session[:new_game] = Game.new(player)
+    redirect '/play'
   end
 
-  get '/make-a-move' do
-    @player_name = session[:player_name]
-    erb :make_move
+  get '/play' do
+    @new_game = session[:new_game]
+    erb :play
+  end
+
+  post '/choice' do
+  @new_game = session[:new_game]
+  @new_game.player.weapon_choice(params[:player_choice])
+  redirect to ('/result')
+  end
+
+  get '/result' do
+    @new_game = session[:new_game]
+    erb(:result)
   end
 
   run! if app_file == $0
